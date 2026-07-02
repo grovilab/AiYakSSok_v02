@@ -501,11 +501,15 @@ ul { padding: 0; list-style: none; }
 .filter-scroll {
   display: flex;
   gap: 7px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  flex-wrap: wrap;
+  overflow: visible;
+  padding-bottom: 0;
   margin-bottom: 22px;
 }
-.filter-scroll::-webkit-scrollbar { display: none; }
+
+.filter-scroll::-webkit-scrollbar {
+  display: none;
+}
 .filter-chip {
   flex: none;
   padding: 8px 14px;
