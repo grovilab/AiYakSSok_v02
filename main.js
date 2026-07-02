@@ -1034,7 +1034,7 @@
       { key: "symptom", label: "증상" },
       { key: "hospital", label: "병원" },
       { key: "prescription", label: "처방" },
-      { key: "intake", label: "실제 복용" },
+      { key: "intake", label: "복용" },
       { key: "discontinuation", label: "중단" },
       { key: "reaction", label: "반응" }
     ];
