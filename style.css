@@ -504,7 +504,7 @@ ul { padding: 0; list-style: none; }
   flex-wrap: wrap;
   overflow: visible;
   padding-bottom: 0;
-  margin-bottom: 26px;
+  margin-bottom: 24px;
 }
 
 .filter-scroll::-webkit-scrollbar {
@@ -512,7 +512,7 @@ ul { padding: 0; list-style: none; }
 }
 .filter-chip {
   flex: none;
-  padding: 7px 12px;
+  padding: 7px 11px;
   border-radius: 999px;
   border: none;
   background: var(--surface);
