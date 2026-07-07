@@ -542,18 +542,11 @@
 
     var html = "";
 
-    // 1) 오늘의 브리핑 (+ 가장 최근 처방 vs 실제 복용 미니 비교)
-    var latestHome = summaries.length ? summaries[0] : null;
+    // 1) 오늘의 브리핑
     html += '<div class="briefing-card">' +
       '<div class="briefing-card__eyebrow">' + ICONS.sparkle + ' ' + (child.name ? escapeHtml(child.name) : "우리 아이") + (ageString(child.birthDate) ? " · " + ageString(child.birthDate) : "") + '</div>' +
       '<div class="briefing-card__headline">' + escapeHtml(briefing.headline) + '</div>' +
       '<div class="briefing-card__sub">' + escapeHtml(briefing.sub) + '</div>' +
-      (latestHome ?
-        '<div class="briefing-card__compare">' +
-          '<div class="briefing-card__compare-label">가장 최근 처방 · <strong>' + escapeHtml(latestHome.prescription.medName) + '</strong>' +
-            (isAntibiotic(latestHome.prescription) ? ' <span class="badge badge-antibiotic">항생제</span>' : '') + '</div>' +
-          compareBarHtml(latestHome.prescription.prescribedDays, latestHome.actualDays, latestHome.ongoing) +
-        '</div>' : '') +
       '<div class="briefing-card__meta">' +
         '<div class="briefing-meta-item"><span class="briefing-meta-item__num">' + getRecords("hospital").length + '</span><span class="briefing-meta-item__label">병원 방문</span></div>' +
         '<div class="briefing-meta-item"><span class="briefing-meta-item__num">' + getRecords("prescription").length + '</span><span class="briefing-meta-item__label">처방</span></div>' +
@@ -1193,7 +1186,7 @@
 
     var html = "";
 
-    // 0) 히어로 카드 — 아이 정보 + 가장 최근 처방의 비교(핵심 가치) + 공유 문구 복사
+    // 0) 아이 정보 (체중 참고 표시) + 진료/보호자 공유 문구 복사 버튼
     var child = state.data.child;
     var infoParts = [];
     if (child.name) infoParts.push(escapeHtml(child.name));
@@ -1201,53 +1194,23 @@
     if (ageStr) infoParts.push(ageStr);
     var wStr = weightString(child.weight);
     if (wStr) infoParts.push(wStr + " (참고용)");
-    var latest = summaries.length ? summaries[0] : null;
-    html += '<div class="summary-hero">' +
-      '<div class="summary-childbar__info">' + (infoParts.length ? infoParts.join(" · ") : "아이 정보를 설정에서 입력해 주세요") + '</div>';
-    if (latest) {
-      var latestAnti = isAntibiotic(latest.prescription);
-      html += '<div class="summary-hero__label">가장 최근 처방 · <strong>' + escapeHtml(latest.prescription.medName) + '</strong>' +
-          (latestAnti ? ' <span class="badge badge-antibiotic">항생제</span>' : '') + '</div>' +
-        compareBarHtml(latest.prescription.prescribedDays, latest.actualDays, latest.ongoing);
-    }
-    html += '<button type="button" class="btn btn-soft summary-hero__copy" data-action="copy-summary">' + ICONS.copy + ' 진료/보호자 공유 문구 복사</button>' +
-      '<p class="summary-childbar__hint">복사한 문구는 병원 진료 시 보여주거나, 배우자·조부모에게 카카오톡으로 공유할 수 있어요.</p>' +
-    '</div>';
+    html += '<div class="summary-childbar">' +
+      '<div class="summary-childbar__info">' + (infoParts.length ? infoParts.join(" · ") : "아이 정보를 설정에서 입력해 주세요") + '</div>' +
+      '<button type="button" class="btn btn-soft btn-sm" data-action="copy-summary">' + ICONS.copy + ' 진료/보호자 공유 문구 복사</button>' +
+    '</div>' +
+    '<p class="summary-childbar__hint">복사한 문구는 병원 진료 시 보여주거나, 배우자·조부모에게 카카오톡으로 공유할 수 있어요.</p>';
 
     // 1) 자동 브리핑 — 기록을 바탕으로 자동 정리한 문단
     var briefingText = generateSummaryBriefing();
     if (briefingText) {
       html += '<div class="summary-briefing">' +
-        '<div class="summary-briefing__eyebrow">' + ICONS.sparkle + ' 기록 기반 자동 요약</div>' +
+        '<div class="summary-briefing__eyebrow">' + ICONS.sparkle + ' 자동 브리핑</div>' +
         '<div class="summary-briefing__text">' + briefingText + '</div>' +
         '<div class="summary-briefing__foot">기록을 바탕으로 자동으로 정리했어요. 판단은 의사·약사와 상의해 주세요.</div>' +
       '</div>';
     }
 
-    // 2) 약별 처방 vs 실제 복용 비교 (핵심 — 브리핑 바로 다음)
-    html += '<div class="screen-section screen-section--primary">' +
-      '<div class="screen-section__head"><span class="screen-section__title">약별 처방 vs 실제 복용 비교</span></div>' +
-      '<p class="screen-section__sub">처방 기간과 실제 복용 기록을 나란히 비교해 보여줘요.</p>';
-    if (summaries.length === 0) {
-      html += '<div class="card u-muted" style="font-size:12.5px;">등록된 처방이 없어요.</div>';
-    } else {
-      html += summaries.map(function (s) {
-        var isAnti = isAntibiotic(s.prescription);
-        return '<div class="card compare-card">' +
-          '<div class="compare-card__head">' +
-            '<span class="compare-card__name">' + escapeHtml(s.prescription.medName) +
-              (isAnti ? ' <span class="badge badge-antibiotic">항생제</span>' : ' <span class="badge badge-cat">' + escapeHtml(s.prescription.category) + '</span>') +
-            '</span>' +
-            '<span class="compare-card__date">' + formatDateShort(s.prescription.date) + '</span>' +
-          '</div>' +
-          compareBarHtml(s.prescription.prescribedDays, s.actualDays, s.ongoing) +
-          (s.discontinuation ? '<div class="compare-stop">' + ICONS.stop + ' 중단 사유: ' + escapeHtml(s.discontinuation.reason) + (s.discontinuation.reaction ? " · " + escapeHtml(s.discontinuation.reaction) : "") + '</div>' : "") +
-        '</div>';
-      }).join("");
-    }
-    html += '</div>';
-
-    // 3) 항생제 이력 — 별도 강조 패널 (비교 다음 순위)
+    // 2) 항생제 이력 — 별도 강조 패널
     if (antibiotics.length > 0) {
       html += '<div class="antibiotic-panel">' +
         '<div class="antibiotic-panel__head">' +
@@ -1266,7 +1229,7 @@
       '</div>';
     }
 
-    // 4) 핵심 지표 (시각 무게 축소 — CSS에서 플랫 처리)
+    // 3) 핵심 지표
     html += '<div class="stat-grid">' +
       statBox(hospitals.length, "병원 방문") +
       statBox(symptoms.length, "증상 기록") +
@@ -1275,6 +1238,28 @@
       statBox(antibiotics.length, "항생제 처방") +
       statBox(getRecords("discontinuation").length, "중단 기록") +
     '</div>';
+
+    // 4) 약별 처방 vs 실제 복용 비교 (핵심)
+    html += '<div class="screen-section">' +
+      '<div class="screen-section__head"><span class="screen-section__title">약별 처방 vs 실제 복용 비교</span></div>';
+    if (summaries.length === 0) {
+      html += '<div class="card u-muted" style="font-size:12.5px;">등록된 처방이 없어요.</div>';
+    } else {
+      html += summaries.map(function (s) {
+        var isAnti = isAntibiotic(s.prescription);
+        return '<div class="card compare-card">' +
+          '<div class="compare-card__head">' +
+            '<span class="compare-card__name">' + escapeHtml(s.prescription.medName) +
+              (isAnti ? ' <span class="badge badge-antibiotic">항생제</span>' : ' <span class="badge badge-cat">' + escapeHtml(s.prescription.category) + '</span>') +
+            '</span>' +
+            '<span class="compare-card__date">' + formatDateShort(s.prescription.date) + '</span>' +
+          '</div>' +
+          compareBarHtml(s.prescription.prescribedDays, s.actualDays, s.ongoing) +
+          (s.discontinuation ? '<div class="compare-stop">' + ICONS.stop + ' 중단 사유: ' + escapeHtml(s.discontinuation.reason) + (s.discontinuation.reaction ? " · " + escapeHtml(s.discontinuation.reaction) : "") + '</div>' : "") +
+        '</div>';
+      }).join("");
+    }
+    html += '</div>';
 
     // 병원 방문 이력
     html += '<div class="screen-section">' +
